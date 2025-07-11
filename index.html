@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Syllabus Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#38d39f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Syllabus Tracker">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f4f6fa 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 900px;
+      margin: 48px auto 24px auto;
+      background: rgba(255,255,255,0.98);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(80,120,255,0.10), 0 1.5px 8px rgba(60,60,60,0.04);
+      padding: 40px 32px 32px 32px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .header-icon {
+      font-size: 2.5rem;
+      color: #4f8cff;
+      filter: drop-shadow(0 2px 6px #4f8cff33);
+    }
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 600;
+      color: #2d3a4b;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    .overall-progress-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      margin-bottom: 38px;
+      flex-wrap: wrap;
+    }
+    .overall-progress-bar {
+      width: 320px;
+      max-width: 90vw;
+      background: #e0e6ed;
+      border-radius: 10px;
+      height: 22px;
+      box-shadow: 0 1px 8px #4f8cff11;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .overall-progress {
+      height: 100%;
+      width: 0%;
+      border-radius: 10px 0 0 10px;
+      transition: width 0.7s cubic-bezier(.4,1.4,.6,1), background 0.5s;
+      box-shadow: 0 1px 8px #4f8cff22;
+    }
+    .overall-progress-label {
+      position: absolute;
+      right: 14px;
+      top: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      font-size: 1.05rem;
+      color: #2d3a4b;
+      font-weight: 600;
+      opacity: 0.8;
+      letter-spacing: 0.5px;
+    }
+    .pie-chart-container {
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .pie-chart-svg {
+      width: 80px;
+      height: 80px;
+      transform: rotate(-90deg);
+    }
+    .pie-bg {
+      stroke: #e0e6ed;
+      stroke-width: 12;
+    }
+    .pie-fg {
+      stroke-width: 12;
+      stroke-linecap: round;
+      transition: stroke-dasharray 0.7s cubic-bezier(.4,1.4,.6,1), stroke 0.5s;
+    }
+    .pie-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #4f8cff;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+    .subject {
+      background: linear-gradient(120deg, #f7faff 80%, #e0e7ff 100%);
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(80,120,255,0.07);
+      margin-bottom: 36px;
+      padding: 28px 22px 22px 22px;
+      transition: box-shadow 0.2s, transform 0.2s;
+      border: 1.5px solid #e0e6ed;
+      opacity: 0;
+      transform: translateY(30px) scale(0.98);
+      animation: fadeInCard 0.7s cubic-bezier(.4,1.4,.6,1) forwards;
+    }
+    @keyframes fadeInCard {
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .subject:hover {
+      box-shadow: 0 6px 24px rgba(80,120,255,0.13);
+      transform: translateY(-2px) scale(1.01);
+      border-color: #b6c6ff;
+    }
+    .subject-title {
+      font-size: 1.25rem;
+      color: #3a4a6b;
+      margin-bottom: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .progress-bar {
+      background: #e0e6ed;
+      border-radius: 8px;
+      height: 18px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px #4f8cff11;
+      position: relative;
+    }
+    .progress {
+      height: 100%;
+      width: 0%;
+      transition: width 0.7s cubic-bezier(.4,1.4,.6,1), background 0.5s;
+      border-radius: 8px 0 0 8px;
+      box-shadow: 0 1px 8px #4f8cff22;
+    }
+    .progress-label {
+      position: absolute;
+      right: 12px;
+      top: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      color: #2d3a4b;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 1.04rem;
+      color: #2d3a4b;
+      border-radius: 7px;
+      padding: 6px 8px;
+      transition: background 0.18s;
+    }
+    li:hover {
+      background: #e8f0ff;
+    }
+    input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      margin-right: 14px;
+      border-radius: 6px;
+      border: 2px solid #b6c6ff;
+      box-shadow: 0 1px 2px #4f8cff22;
+      transition: box-shadow 0.2s, transform 0.2s;
+      transform: scale(1);
+    }
+    input[type="checkbox"]:hover {
+      box-shadow: 0 2px 8px #4f8cff33;
+      transform: scale(1.08);
+    }
+    input[type="checkbox"]:active {
+      transform: scale(0.95);
+    }
+    input[type="checkbox"]:checked {
+      animation: checkboxPop 0.25s cubic-bezier(.4,1.4,.6,1);
+    }
+    @keyframes checkboxPop {
+      0% { transform: scale(1); }
+      60% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    input[type="checkbox"]:checked + label {
+      text-decoration: line-through;
+      color: #38d39f;
+      opacity: 0.7;
+      transition: color 0.3s, opacity 0.3s, text-decoration 0.3s;
+    }
+    label {
+      cursor: pointer;
+      transition: color 0.2s, opacity 0.2s;
+      user-select: none;
+    }
+    @media (max-width: 700px) {
+      .container {
+        padding: 12px 2vw;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      .subject-title {
+        font-size: 1.05rem;
+      }
+      .subject {
+        padding: 16px 6px 12px 6px;
+      }
+      .overall-progress-section {
+        flex-direction: column;
+        gap: 18px;
+      }
+    }
+    .footer {
+      text-align: center;
+      color: #7a8ca6;
+      font-size: 0.98rem;
+      margin: 18px 0 10px 0;
+      opacity: 0.7;
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="header-icon">📚</span>
+      <h1>Progress Syllabus Tracker</h1>
+    </div>
+    <div class="overall-progress-section">
+      <div class="pie-chart-container">
+        <svg class="pie-chart-svg" viewBox="0 0 80 80">
+          <defs>
+            <linearGradient id="pie-gradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#4f8cff"/>
+              <stop offset="100%" stop-color="#38d39f"/>
+            </linearGradient>
+          </defs>
+          <circle class="pie-bg" cx="40" cy="40" r="32" fill="none" />
+          <circle class="pie-fg" cx="40" cy="40" r="32" fill="none" stroke-dasharray="0 201.06" />
+        </svg>
+        <span class="pie-label">0%</span>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <div class="overall-progress-bar">
+          <div class="overall-progress" style="width:0%"></div>
+          <span class="overall-progress-label">0%</span>
+        </div>
+        <div style="font-size:1.05rem;color:#4f8cff;font-weight:600;opacity:0.8;letter-spacing:0.5px;">Overall Progress</div>
+      </div>
+    </div>
+    <div id="tracker"></div>
+  </div>
+  <div class="footer">
+    Made with <span style="color:#4f8cff;">&#10084;</span> for your learning journey
+  </div>
+  <script>
+    const syllabus = [
+      {
+        title: 'DADV',
+        topics: [
+          'Intro. to Data Analytics',
+          'Intro. to Python Fundamentals and Statistics',
+          'Probability and Types of Testing',
+          'Regression, Classification and Clustering',
+          'Data Visualization using PowerBI',
+        ]
+      },
+      {
+        title: 'DAA',
+        topics: [
+          'Intro to Analysis of Algorithms',
+          'Divide and Conquer Algorithms',
+          'Greedy Algorithms',
+          'Dynamic Programming',
+          'Exploring Graphs',
+          'Backtracking and Branch & Bound',
+          'String Matching & NP Completeness',
+        ]
+      },
+      {
+        title: 'SOFTWARE ENGINEERING',
+        topics: [
+          'Introduction',
+          'Software Project Management',
+          'Requirements Engineering',
+          'Structured System Design',
+          'Coding and Unit Testing',
+          'Software Testing and Quality Assurance',
+          'CASE Tools and Adv. Practice of system',
+          'Adv. Software Engineering',
+        ]
+      },
+      {
+        title: 'TOC',
+        topics: [
+          'Introduction',
+          'Regular Languages and FInite Automata',
+          'Grammars',
+          'Turing Machines',
+          'Undecidability',
+        ]
+      },
+      {
+        title: 'ENTERPRISE PROGRAMMING',
+        topics: [
+          'Foundation of EP',
+          'Servlets',
+          'JSP : Java Server Programming',
+          'Hibernate (ORM)',
+          'Spring',
+          'Spring Boot',
+        ]
+      },
+      {
+        title: 'AZURE (AWS)',
+        topics: [
+          'Cloud Concepts',
+          'Azure Services',
+          'Security, Privacy, Compliance and Trust',
+          'Azure Pricing and Support',
+          'Azure SLA and Service Lifecycles',
+        ]
+      },
+    ];
+
+    // Helper to get color for progress (red to yellow to green)
+    function getProgressColor(percent) {
+      if (percent < 40) return '#ff4d4f'; // red
+      if (percent < 70) return '#ffc107'; // yellow/orange
+      if (percent < 100) return '#38d39f'; // green
+      return '#176a2a'; // dark green for 100%
+    }
+    // Helper to get gradient for progress bar
+    function getProgressGradient(percent, isPie) {
+      if (percent < 40) {
+        return isPie ? '#ff4d4f' : 'linear-gradient(90deg, #ff4d4f 0%, #ffb84d 100%)';
+      } else if (percent < 70) {
+        return isPie ? '#ffc107' : 'linear-gradient(90deg, #ffc107 0%, #ffe066 100%)';
+      } else {
+        if (percent < 100) {
+          return isPie ? '#38d39f' : 'linear-gradient(90deg, #38d39f 0%, #43b36a 100%)';
+        } else {
+          return isPie ? '#176a2a' : 'linear-gradient(90deg, #176a2a 0%, #38d39f 100%)';
+        }
+      }
+    }
+
+    function getProgress(subject) {
+      const data = localStorage.getItem('syllabus_' + subject);
+      return data ? JSON.parse(data) : Array(syllabus.find(s => s.title === subject).topics.length).fill(false);
+    }
+
+    function setProgress(subject, arr) {
+      localStorage.setItem('syllabus_' + subject, JSON.stringify(arr));
+    }
+
+    function updateProgressBar(subjectTitle, progressArr) {
+      const subjectIdx = syllabus.findIndex(s => s.title === subjectTitle);
+      const completed = progressArr.filter(Boolean).length;
+      const total = progressArr.length;
+      const percent = Math.round((completed / total) * 100);
+      const section = document.querySelectorAll('.subject')[subjectIdx];
+      const progressBar = section.querySelector('.progress');
+      const progressLabel = section.querySelector('.progress-label');
+      progressBar.style.width = percent + '%';
+      progressLabel.textContent = percent + '%';
+      progressBar.style.background = getProgressGradient(percent, false);
+      // Update checkbox accent color
+      section.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.style.accentColor = getProgressColor(percent);
+      });
+    }
+
+    function getOverallProgress() {
+      let completed = 0, total = 0;
+      syllabus.forEach(subject => {
+        const arr = getProgress(subject.title);
+        completed += arr.filter(Boolean).length;
+        total += arr.length;
+      });
+      return { percent: total ? Math.round((completed / total) * 100) : 0, completed, total };
+    }
+
+    function updateOverallProgress() {
+      const { percent } = getOverallProgress();
+      // Progress bar
+      const bar = document.querySelector('.overall-progress');
+      const label = document.querySelector('.overall-progress-label');
+      bar.style.width = percent + '%';
+      label.textContent = percent + '%';
+      bar.style.background = getProgressGradient(percent, false);
+      // Pie chart
+      const pie = document.querySelector('.pie-fg');
+      const pieLabel = document.querySelector('.pie-label');
+      const radius = 32;
+      const circumference = 2 * Math.PI * radius;
+      const dash = (percent / 100) * circumference;
+      pie.setAttribute('stroke-dasharray', `${dash} ${circumference - dash}`);
+      pie.setAttribute('stroke', getProgressGradient(percent, true));
+      pieLabel.textContent = percent + '%';
+    }
+
+    function render(initial = false) {
+      const tracker = document.getElementById('tracker');
+      tracker.innerHTML = '';
+      syllabus.forEach((subject, idx) => {
+        const progressArr = getProgress(subject.title);
+        const completed = progressArr.filter(Boolean).length;
+        const total = subject.topics.length;
+        const percent = Math.round((completed / total) * 100);
+
+        const section = document.createElement('section');
+        section.className = 'subject';
+        if (initial) section.style.animationDelay = (idx * 0.08) + 's';
+        else section.style.animation = 'none';
+
+        section.innerHTML = `
+          <div class="subject-title">${subject.title}</div>
+          <div class="progress-bar">
+            <div class="progress" style="width:${percent}%;background:${getProgressGradient(percent, false)}"></div>
+            <span class="progress-label">${percent}%</span>
+          </div>
+          <ul>
+            ${subject.topics.map((topic, i) => `
+              <li>
+                <input type="checkbox" id="${subject.title}_${i}" ${progressArr[i] ? 'checked' : ''}>
+                <label for="${subject.title}_${i}">${topic}</label>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+        tracker.appendChild(section);
+
+        // Set checkbox accent color based on subject progress
+        section.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          cb.style.accentColor = getProgressColor(percent);
+        });
+
+        // Add event listeners for checkboxes
+        section.querySelectorAll('input[type="checkbox"]').forEach((cb, i) => {
+          cb.addEventListener('change', () => {
+            const arr = getProgress(subject.title);
+            arr[i] = cb.checked;
+            setProgress(subject.title, arr);
+            // Only update the progress bar and label, not the whole tracker
+            updateProgressBar(subject.title, arr);
+            updateOverallProgress();
+          });
+        });
+      });
+      updateOverallProgress();
+    }
+
+    render(true);
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(function(reg) { /* success */ })
+          .catch(function(err) { /* error */ });
+      });
+    }
+  </script>
+</body>
+</html> 
